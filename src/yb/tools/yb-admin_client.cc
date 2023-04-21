@@ -2746,6 +2746,7 @@ Result<rapidjson::Document> ClusterAdminClient::RestoreSnapshotSchedule(
   rpc.set_deadline(deadline);
   master::RestoreSnapshotScheduleRequestPB req;
   master::RestoreSnapshotScheduleResponsePB resp;
+  master::ListSnapshotSchedulesResponsePB list_resp;
   req.set_snapshot_schedule_id(schedule_id.data(), schedule_id.size());
   req.set_restore_ht(restore_at.ToUint64());
 
@@ -2772,6 +2773,12 @@ Result<rapidjson::Document> ClusterAdminClient::RestoreSnapshotSchedule(
 
   AddStringField("snapshot_id", snapshot_id.ToString(), &document, &document.GetAllocator());
   AddStringField("restoration_id", restoration_id.ToString(), &document, &document.GetAllocator());
+  
+  master_backup_proxy_->ListSnapshotSchedules(req, &list_resp, rpc);
+  if(!list_resp.has_error()) {
+    auto table_name = list_resp.schedules(0).options().filter().tables(0).table_name;
+    AddStringField("table_name", table_name.ToString(), &document, &document.GetAllocator());
+  }
 
   return document;
 }
