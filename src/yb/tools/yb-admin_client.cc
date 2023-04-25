@@ -2782,7 +2782,7 @@ Result<rapidjson::Document> ClusterAdminClient::RestoreSnapshotSchedule(
     if (list_resp.schedules_size() > 0) {
       const auto& filter = list_resp.schedules(0).options().filter();
       if (filter.tables().tables_size() == 1) {
-        const auto table_name = filter.tables().tables(0).table_name();
+        const auto table_name = filter.tables().tables(0).namespace_().name();
         AddStringField("namespace_restored", table_name, &document, &document.GetAllocator());
       }
     }
